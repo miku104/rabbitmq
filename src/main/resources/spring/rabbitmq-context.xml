@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:rabbit="http://www.springframework.org/schema/rabbit"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/rabbit http://www.springframework.org/schema/rabbit/spring-rabbit.xsd">
+
+     <!--1.定义RabbitMQ的连接工厂-->
+    <rabbit:connection-factory id="connectionFactory"
+                               host="192.168.0.108"
+                               port="5672"
+                               username="guest"
+                               password="guest"
+                               virtual-host="/vhost_miku" />
+    <!--2.定义模板（可以指定交换机或队列）-->
+    <rabbit:template id="amqpTemplate" connection-factory="connectionFactory" exchange="fanoutExchange" />
+
+    <!--3.定义队列、交换机、以及完成队列和交换机的绑定-->
+    <!-- 定义队列，自动声明 -->
+    <rabbit:queue name="zpcQueue" auto-declare="true" />
+
+
+    <!--定义交换机,根据type类型定义对应type的交换机,如:发布订阅模式使用rabbit:direct-exchange标签-->
+   <!-- <rabbit:direct-exchange name=""></rabbit:direct-exchange>-->
+
+    <!--定义主体模式,根据type类型定义,使用rabbit:topic-exchange标签 -->
+    <!--<rabbit:topic-exchange name="">
+        rabbit:binding pattern=""  设置路由键的通配符
+    </rabbit:topic-exchange>-->
+
+    <!-- 定义交换器，把Q绑定到交换机，自动声明 -->
+    <rabbit:fanout-exchange name="fanoutExchange" auto-declare="true">
+        <rabbit:bindings>
+            <rabbit:binding queue="zpcQueue" />
+        </rabbit:bindings>
+    </rabbit:fanout-exchange>
+
+    <!--4.定义监听-->
+    <rabbit:listener-container connection-factory="connectionFactory">
+        <rabbit:listener ref="foo" method="listen" queue-names="zpcQueue" />
+    </rabbit:listener-container>
+
+    <bean id="foo" class="cn.miku.rabbitmq.springamqp.Foo" />
+
+    <!--5.定义管理-->
+    <!-- MQ的管理，包括队列、交换器等 -->
+    <rabbit:admin connection-factory="connectionFactory" />
+</beans>
