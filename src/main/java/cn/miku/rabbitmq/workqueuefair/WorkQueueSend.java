@@ -37,8 +37,6 @@ public class WorkQueueSend {
         channel.queueDeclare(QUEUE_NAME,true,false,false,null);
 
         int prefetchCount=10;
-        //服务传递的最大消息数
-        channel.basicQos(prefetchCount);
 
         for (int i=0;i<50;i++){
             String msg="hello, work queue"+i;
